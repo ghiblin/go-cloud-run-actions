@@ -9,6 +9,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE: ${{ secrets.GCP_APP_NAME }}
   REGION: eu-central1
+  IMAGE_NAME: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }}
 
 jobs:
   deploy:
@@ -38,13 +39,13 @@ jobs:
     
     - name: Build and Push Container
       run: |-
-        docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }} .
-        docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }}
+        docker build -t ${{ env.IMAGE_NAME }} .
+        docker push ${{ env.IMAGE_NAME }}
   
     - name: Deploy to Cloud Run
       run: |-
-        gcloud run deploy ${{ env.SERVICE }} \
+        gcloud run deploy ${{ env.PROJECT_ID }} \
           --region ${{ env.REGION }} \
-          --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }} \
+          --image ${{ env.IMAGE_NAME }} \
           --platform "managed" \
           --quiet
